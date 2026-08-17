@@ -30,9 +30,9 @@ Android 原生工具，用内置 WebView 打开 Brown Dust 2 官方 Web Shop，�
 ## 使用方法
 
 1. 打开 App，等待 Brown Dust 2 官方 Web Shop 加载完成。
-2. 在官网选择 Google 或 Apple，并完成正常登录。
-3. 捕获成功后，App 会显示包含完整 Refresh Token 的原生面板。
-4. 点击“复制完整 Token”，然后粘贴到可信的 BD2-Ops 游戏账号表单。
+2. 按页面上方提示先开启加速，再在官网选择 Google 或 Apple，并完成正常登录。
+3. 捕获成功后，App 会显示包含完整 Refresh Token 的原生面板，同时保留当前网页，不会自动刷新或跳回首页。
+4. 点击“复制完整 Token”，然后粘贴到可信的 BD2-Ops 游戏账号表单；关闭结果面板后仍可继续操作官网。
 5. 关闭结果面板后，App 会清除内存中的 Token。
 
 正常切换账号时先使用官网退出功能。如果官网退出不彻底、认证提供方自动选择旧账号或页面状态异常，打开“更多 -> 清除网页登录数据”，确认后清理本 App WebView 的 Cookie、缓存和站点存储。该操作不影响手机 Chrome。
@@ -52,7 +52,7 @@ Android 原生工具，用内置 WebView 打开 Brown Dust 2 官方 Web Shop，�
 
 - App 只申请联网权限，禁止 Android 自动备份和设备迁移数据。
 - 完整 Token 仅由用户主动复制到系统剪贴板。
-- App 会在官网首次加载前、Token 捕获后和 WebView 销毁时清除 Cookie、缓存和站点存储，避免 Firebase 会话跨次保留。
+- App 会在官网首次加载前、用户手动确认清除以及 WebView 销毁时清除 Cookie、缓存和站点存储，避免 Firebase 会话跨次保留；捕获 Token 后不会自动清理当前网页会话。
 - Token 面板显示期间启用安全窗口，系统截图和最近任务缩略图不会显示 Token。
 - 剪贴板内容标记为敏感，Android 13 及以上不会在系统剪贴板预览中显示完整 Token。
 - 官网主 WebView 只允许 `https://webshop.browndust2.global` 主导航。

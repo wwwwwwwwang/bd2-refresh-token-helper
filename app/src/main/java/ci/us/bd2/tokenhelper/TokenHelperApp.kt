@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -143,39 +144,53 @@ fun TokenHelperApp(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            TokenWebViewHost(
-                controller = controller,
-                onToken = {
-                    if (store.capture(it)) {
-                        controller.clearBrowsingData {}
-                    }
-                },
-                onCaptureAvailabilityChanged = { captureAvailable = it },
-                onLoadingChanged = { loading = it },
-                onError = { errorMessage = it },
-                debugLogStore = debugLogStore,
-            )
-            if (loading) {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter),
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    "请开启加速后登录",
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }
-            errorMessage?.let { message ->
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                ) {
-                    Text(message, color = MaterialTheme.colorScheme.error)
-                    TextButton(onClick = controller::reload) { Text("重试") }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) {
+                TokenWebViewHost(
+                    controller = controller,
+                    onToken = store::capture,
+                    onCaptureAvailabilityChanged = { captureAvailable = it },
+                    onLoadingChanged = { loading = it },
+                    onError = { errorMessage = it },
+                    debugLogStore = debugLogStore,
+                )
+                if (loading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter),
+                    )
+                }
+                errorMessage?.let { message ->
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                    ) {
+                        Text(message, color = MaterialTheme.colorScheme.error)
+                        TextButton(onClick = controller::reload) { Text("重试") }
+                    }
                 }
             }
         }
