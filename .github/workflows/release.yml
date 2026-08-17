@@ -1,6 +1,12 @@
 name: 发布正式 APK
 
 on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 已存在的发布 Tag，例如 v1.0.0
+        required: true
+        type: string
   push:
     tags:
       - 'v*'
@@ -9,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: android-release-${{ github.ref }}
+  group: android-release-${{ inputs.release_tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -18,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
       ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
       ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
       ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
@@ -55,13 +62,14 @@ jobs:
             fi
           done
 
-          tag_version="${GITHUB_REF_NAME#v}"
+          tag_version="${RELEASE_TAG#v}"
           app_version="$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts)"
           if [[ "$tag_version" != "$app_version" ]]; then
             echo "::error::Tag 版本 $tag_version 与 App 版本 $app_version 不一致"
             exit 1
           fi
           echo "version=$tag_version" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: 准备正式签名
         shell: bash
@@ -71,7 +79,10 @@ jobs:
           echo "ANDROID_RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/bd2-release.keystore" >> "$GITHUB_ENV"
 
       - name: 测试、Lint 并构建正式 APK
-        run: ./gradlew testReleaseUnitTest lintRelease assembleRelease --stacktrace
+        run: |
+          python scripts/create_github_release.py --help > /dev/null
+          python -m unittest discover -s scripts/tests -p 'test_*.py'
+          ./gradlew testReleaseUnitTest lintRelease assembleRelease --stacktrace
 
       - name: 整理发布文件
         shell: bash
@@ -98,10 +109,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" release/* \
-            --verify-tag \
-            --title "BD2 Refresh Token 获取助手 $GITHUB_REF_NAME" \
-            --generate-notes
+          python scripts/create_github_release.py \
+            --tag "${{ steps.metadata.outputs.release_tag }}" \
+            --title "BD2 Refresh Token 获取助手 ${{ steps.metadata.outputs.release_tag }}" \
+            release/*
 
       - name: 清理正式签名
         if: ${{ always() }}

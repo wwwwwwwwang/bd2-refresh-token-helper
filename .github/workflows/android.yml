@@ -36,6 +36,9 @@ jobs:
       - name: 设置 Gradle 缓存
         uses: gradle/actions/setup-gradle@v4
 
+      - name: 测试发布工具
+        run: python -m unittest discover -s scripts/tests -p 'test_*.py'
+
       - name: 测试、Lint 并构建 Debug APK
         run: ./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace
 

@@ -3,6 +3,10 @@ local.properties
 **/build/
 *.jks
 *.keystore
+*.p12
+*.pfx
+__pycache__/
+*.py[cod]
 .idea/
 *.iml
 .DS_Store
