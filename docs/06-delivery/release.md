@@ -25,7 +25,21 @@ testReleaseUnitTest -> lintRelease -> assembleRelease
 
 发布完成后下载 APK，使用 `.sha256` 文件校验，并在已安装上一正式版的设备上执行覆盖安装测试。
 
+创建 Release 时仅对 GitHub `408`、`429`、`5xx`、超时和连接中断执行有限重试。若 Tag 触发的构建已经成功、但 Release API 持续不可用，可手动运行“发布正式 APK”工作流并填写已有 `release_tag`；不得移动或覆盖已有 Tag。
+
 `v1.0.0` 使用全新的正式签名，无法覆盖安装早期 Actions 测试 APK。测试用户首次迁移时必须先卸载测试版；从 `v1.0.0` 开始，所有正式版本必须继续使用同一 keystore。
+
+## 更新启动图标
+
+原始图片保存在 `artwork/launcher-icon-source.jpg`。更新图片后执行：
+
+```bash
+python -m pip install Pillow
+python scripts/generate_launcher_icons.py path/to/launcher-icon.jpg
+python -m unittest discover -s scripts/tests -p 'test_*.py'
+```
+
+脚本会中心裁切为正方形并生成五档传统图标、圆形图标和 Android 8+ 自适应前景。提交前必须确认 Manifest 图标引用与资源尺寸测试通过。
 
 ## 回滚
 
